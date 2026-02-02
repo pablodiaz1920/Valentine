@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Will you be my Valentine?</title>
 
+  <!-- Librería de Confeti (si falla, la página seguirá funcionando) -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 
   <style>
@@ -24,7 +25,7 @@
       display: grid;
       place-items: center;
       background: radial-gradient(circle at top, var(--bg2), var(--bg1));
-      font-family: system-ui, sans-serif;
+      font-family: system-ui, -apple-system, sans-serif;
       overflow: hidden;
       padding: 16px;
     }
@@ -35,7 +36,7 @@
       inset: 0;
       width: 100vw;
       height: 100vh;
-      pointer-events: none;
+      pointer-events: none; /* CRUCIAL: permite hacer click a través del canvas */
       z-index: 9999;
     }
 
@@ -47,6 +48,8 @@
       border-radius: 22px;
       text-align: center;
       box-shadow: 0 18px 60px rgba(0,0,0,.15);
+      position: relative;
+      z-index: 10; /* Asegura que la tarjeta esté por encima del fondo */
     }
 
     .art {
@@ -63,10 +66,11 @@
 
     .button-zone {
       position: relative;
-      width: min(520px, 92%);
+      width: min(520px, 100%);
       height: 150px;
       margin: 0 auto;
-      touch-action: none;
+      /* touch-action: none evita scroll mientras se intenta tocar botones */
+      touch-action: none; 
     }
 
     button {
@@ -83,6 +87,7 @@
       user-select: none;
       -webkit-tap-highlight-color: transparent;
       transition: transform .12s ease, background .12s ease;
+      z-index: 20;
     }
 
     #yesBtn {
@@ -133,6 +138,7 @@
   <canvas id="confettiCanvas"></canvas>
 
   <main class="card">
+    <!-- BÚHO (OWL) SVG -->
     <svg class="art" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <linearGradient id="owlBody" x1="0" x2="0" y1="0" y2="1">
@@ -149,19 +155,25 @@
         </linearGradient>
       </defs>
 
+      <!-- Patas -->
       <path d="M70 175 L60 185 L80 185 Z" fill="#e08e45" />
       <path d="M130 175 L120 185 L140 185 Z" fill="#e08e45" />
 
+      <!-- Cuerpo -->
       <ellipse cx="100" cy="110" rx="70" ry="80" fill="url(#owlBody)"/>
       
+      <!-- Orejas -->
       <path d="M40 70 Q30 30 70 50 Z" fill="#aa7744"/>
       <path d="M160 70 Q170 30 130 50 Z" fill="#aa7744"/>
 
+      <!-- Barriga -->
       <ellipse cx="100" cy="130" rx="45" ry="50" fill="url(#owlBelly)"/>
       
+      <!-- Alas -->
       <path d="M30 110 Q20 140 50 150" fill="none" stroke="#885522" stroke-width="3" stroke-linecap="round"/>
       <path d="M170 110 Q180 140 150 150" fill="none" stroke="#885522" stroke-width="3" stroke-linecap="round"/>
 
+      <!-- Ojos -->
       <circle cx="75" cy="85" r="22" fill="#fff" stroke="#6b4c35" stroke-width="2"/>
       <circle cx="125" cy="85" r="22" fill="#fff" stroke="#6b4c35" stroke-width="2"/>
       <circle cx="75" cy="85" r="8" fill="#333"/>
@@ -169,8 +181,10 @@
       <circle cx="78" cy="82" r="3" fill="#fff" opacity="0.6"/>
       <circle cx="128" cy="82" r="3" fill="#fff" opacity="0.6"/>
 
+      <!-- Pico -->
       <path d="M95 100 L105 100 L100 110 Z" fill="#ffa500"/>
 
+      <!-- Corazón -->
       <path d="M100 135 
                C 100 120, 85 115, 75 125 
                C 65 135, 75 150, 100 165 
@@ -190,7 +204,8 @@
     <div class="hint" id="hint">“No” seems a bit shy 😈</div>
 
     <section class="result" id="result">
-      <h2>YEESSS!! 🎉</h2>
+      <h2>YESS!! 🎉</h2>
+      <!-- GIF RESULTADO -->
       <img
         class="gif-result"
         src="bubududu.gif"
@@ -200,35 +215,126 @@
   </main>
 
   <script>
+    // 1. Obtener elementos de forma segura
     const zone = document.getElementById("zone");
     const yesBtn = document.getElementById("yesBtn");
     const noBtn = document.getElementById("noBtn");
     const result = document.getElementById("result");
     const hint = document.getElementById("hint");
-
-    /* ---------- CONFETTI ---------- */
     const confettiCanvas = document.getElementById("confettiCanvas");
 
-    function resizeConfettiCanvas() {
-      const dpr = Math.max(1, window.devicePixelRatio || 1);
-      confettiCanvas.width = Math.floor(window.innerWidth * dpr);
-      confettiCanvas.height = Math.floor(window.innerHeight * dpr);
-      confettiCanvas.style.width = "100vw";
-      confettiCanvas.style.height = "100vh";
+    // 2. Lógica de los botones (Independiente del Confeti)
+    let yesScale = 1;
+
+    function growYes() {
+      yesScale = Math.min(2.2, yesScale + 0.1);
+      yesBtn.style.transform = `translateY(-50%) scale(${yesScale})`;
     }
 
-    resizeConfettiCanvas();
-    window.addEventListener("resize", resizeConfettiCanvas);
-    window.addEventListener("orientationchange", () => setTimeout(resizeConfettiCanvas, 150));
+    function clamp(n, min, max) {
+      return Math.max(min, Math.min(max, n));
+    }
 
-    const confettiInstance = confetti.create(confettiCanvas, {
-      resize: false,
-      useWorker: true
+    // Función para mover el botón NO
+    function moveNo(mouseX, mouseY) {
+      const zRect = zone.getBoundingClientRect();
+      const bRect = noBtn.getBoundingClientRect();
+
+      // Calcular vector desde el mouse hacia el centro del botón
+      const btnCenterX = bRect.left + bRect.width / 2;
+      const btnCenterY = bRect.top + bRect.height / 2;
+      
+      let dx = btnCenterX - mouseX;
+      let dy = btnCenterY - mouseY;
+      
+      // Normalizar vector (dirección)
+      let mag = Math.hypot(dx, dy);
+      if (mag === 0) mag = 1; // evitar división por cero
+      
+      dx /= mag;
+      dy /= mag;
+
+      // Calcular nueva posición (alejándose)
+      // Usamos coordenadas relativas a la zona
+      let currentLeft = bRect.left - zRect.left;
+      let currentTop = bRect.top - zRect.top;
+      
+      let newLeft = currentLeft + dx * 150; // Salta 150px en la dirección opuesta
+      let newTop = currentTop + dy * 150;
+
+      // Mantener dentro de los límites
+      newLeft = clamp(newLeft, 0, zRect.width - bRect.width);
+      newTop = clamp(newTop, 0, zRect.height - bRect.height);
+
+      noBtn.style.left = newLeft + "px";
+      noBtn.style.top = newTop + "px";
+      noBtn.style.transform = "none"; // Reseteamos transformaciones CSS iniciales si las hubiera
+
+      growYes(); // Hacer crecer el Yes
+    }
+
+    // EVENTOS DEL MOUSE (Escritorio)
+    zone.addEventListener("mousemove", (e) => {
+      const bRect = noBtn.getBoundingClientRect();
+      const btnCenterX = bRect.left + bRect.width / 2;
+      const btnCenterY = bRect.top + bRect.height / 2;
+      
+      const dist = Math.hypot(btnCenterX - e.clientX, btnCenterY - e.clientY);
+      
+      // Si el mouse está cerca (< 140px), huir
+      if (dist < 140) {
+        moveNo(e.clientX, e.clientY);
+      }
     });
 
-    function fullScreenConfetti() {
+    // EVENTOS TÁCTILES (Móvil)
+    // Si intentan tocar el botón, huye inmediatamente
+    noBtn.addEventListener("touchstart", (e) => {
+      e.preventDefault(); // Evitar click estándar
+      const touch = e.touches[0];
+      moveNo(touch.clientX, touch.clientY);
+    });
+
+    // Clic en NO (Red de seguridad por si logran clickearlo)
+    noBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      moveNo(e.clientX, e.clientY);
+    });
+
+    // Clic en YES
+    yesBtn.addEventListener("click", () => {
+      zone.style.display = "none";
+      hint.style.display = "none";
+      result.style.display = "block";
+      
+      // Intentar lanzar confeti solo si la librería cargó correctamente
+      try {
+        launchConfetti();
+      } catch (err) {
+        console.log("Confetti no disponible, pero el amor sí :)");
+      }
+    });
+
+    /* ---------- LÓGICA DE CONFETI ROBUSTA ---------- */
+    function launchConfetti() {
+      if (typeof confetti === 'undefined') return;
+
+      // Ajustar canvas
+      function resizeCanvas() {
+        const dpr = Math.max(1, window.devicePixelRatio || 1);
+        confettiCanvas.width = window.innerWidth * dpr;
+        confettiCanvas.height = window.innerHeight * dpr;
+      }
+      resizeCanvas();
+      
+      const confettiInstance = confetti.create(confettiCanvas, {
+        resize: true,
+        useWorker: true
+      });
+
       const end = Date.now() + 1600;
 
+      // Lluvia inicial
       (function frame() {
         confettiInstance({
           particleCount: 12,
@@ -240,6 +346,7 @@
         if (Date.now() < end) requestAnimationFrame(frame);
       })();
 
+      // Explosión final
       setTimeout(() => {
         confettiInstance({
           particleCount: 300,
@@ -250,8 +357,6 @@
         });
       }, 300);
     }
-
-    /* ---------- YES BUTTON GROWS ---------- */
-    let yesScale = 1;
-    function growYes() {
-      yesScale = Math.min(2.2, yesScale +
+  </script>
+</body>
+</html>
