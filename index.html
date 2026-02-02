@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Will you be my Valentine?</title>
 
-  <!-- Confetti library -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 
   <style>
@@ -116,10 +115,11 @@
       margin: 10px 0;
     }
 
-    .fireworks {
+    .gif-result {
       width: min(380px, 90vw);
       margin: 0 auto;
       display: block;
+      border-radius: 12px;
     }
 
     @keyframes pop {
@@ -133,60 +133,68 @@
   <canvas id="confettiCanvas"></canvas>
 
   <main class="card">
-    <!-- ANIMAL WITH HEART -->
-    <svg class="art" viewBox="0 0 320 240" xmlns="http://www.w3.org/2000/svg">
+    <svg class="art" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
       <defs>
-        <linearGradient id="fur" x1="0" x2="1">
-          <stop offset="0" stop-color="#f7c7a1"/>
-          <stop offset="1" stop-color="#f2a97b"/>
+        <linearGradient id="owlBody" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0" stop-color="#cc9966"/>
+          <stop offset="1" stop-color="#aa7744"/>
         </linearGradient>
-        <linearGradient id="heart" x1="0" x2="1">
-          <stop offset="0" stop-color="#ff4d7d"/>
-          <stop offset="1" stop-color="#ff1f68"/>
+        <linearGradient id="owlBelly" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0" stop-color="#f5e6d3"/>
+          <stop offset="1" stop-color="#e6cca9"/>
+        </linearGradient>
+        <linearGradient id="heartGrad" x1="0" x2="1">
+          <stop offset="0" stop-color="#ff6b95"/>
+          <stop offset="1" stop-color="#ff3b7a"/>
         </linearGradient>
       </defs>
 
-      <path d="M250 50 C250 33 270 25 282 38
-               C294 25 314 33 314 50
-               C314 78 282 92 282 106
-               C282 92 250 78 250 50Z"
-            fill="url(#heart)"/>
+      <path d="M70 175 L60 185 L80 185 Z" fill="#e08e45" />
+      <path d="M130 175 L120 185 L140 185 Z" fill="#e08e45" />
 
-      <path d="M90 120 C90 70 140 40 190 60
-               C240 40 290 70 290 120
-               C290 180 240 210 190 210
-               C140 210 90 180 90 120Z"
-            fill="url(#fur)"/>
+      <ellipse cx="100" cy="110" rx="70" ry="80" fill="url(#owlBody)"/>
+      
+      <path d="M40 70 Q30 30 70 50 Z" fill="#aa7744"/>
+      <path d="M160 70 Q170 30 130 50 Z" fill="#aa7744"/>
 
-      <path d="M110 92 L95 55 L140 78 Z" fill="#f2a97b"/>
-      <path d="M270 92 L285 55 L240 78 Z" fill="#f2a97b"/>
+      <ellipse cx="100" cy="130" rx="45" ry="50" fill="url(#owlBelly)"/>
+      
+      <path d="M30 110 Q20 140 50 150" fill="none" stroke="#885522" stroke-width="3" stroke-linecap="round"/>
+      <path d="M170 110 Q180 140 150 150" fill="none" stroke="#885522" stroke-width="3" stroke-linecap="round"/>
 
-      <circle cx="160" cy="130" r="8"/>
-      <circle cx="220" cy="130" r="8"/>
+      <circle cx="75" cy="85" r="22" fill="#fff" stroke="#6b4c35" stroke-width="2"/>
+      <circle cx="125" cy="85" r="22" fill="#fff" stroke="#6b4c35" stroke-width="2"/>
+      <circle cx="75" cy="85" r="8" fill="#333"/>
+      <circle cx="125" cy="85" r="8" fill="#333"/>
+      <circle cx="78" cy="82" r="3" fill="#fff" opacity="0.6"/>
+      <circle cx="128" cy="82" r="3" fill="#fff" opacity="0.6"/>
 
-      <path d="M190 144 C186 144 182 148 182 152
-               C182 160 190 164 190 170
-               C190 164 198 160 198 152
-               C198 148 194 144 190 144Z"
-            fill="#ff7aa2"/>
+      <path d="M95 100 L105 100 L100 110 Z" fill="#ffa500"/>
+
+      <path d="M100 135 
+               C 100 120, 85 115, 75 125 
+               C 65 135, 75 150, 100 165 
+               C 125 150, 135 135, 125 125 
+               C 115 115, 100 120, 100 135 Z" 
+            fill="url(#heartGrad)" 
+            stroke="#fff" stroke-width="2"/>
     </svg>
 
-    <h1>nirali will you be my valentine?</h1>
+    <h1>Bubu will you be my valentine?</h1>
 
     <section class="button-zone" id="zone">
       <button id="yesBtn">Yes</button>
       <button id="noBtn">No</button>
     </section>
 
-    <!-- HINT -->
     <div class="hint" id="hint">“No” seems a bit shy 😈</div>
 
     <section class="result" id="result">
-      <h2>YAY! 🎉</h2>
+      <h2>YEESSS!! 🎉</h2>
       <img
-        class="fireworks"
-        src="https://media.giphy.com/media/26ufdipQqU2lhNA4g/giphy.gif"
-        alt="Fireworks"
+        class="gif-result"
+        src="bubududu.gif"
+        alt="Bubu Dudu Love"
       />
     </section>
   </main>
@@ -246,59 +254,4 @@
     /* ---------- YES BUTTON GROWS ---------- */
     let yesScale = 1;
     function growYes() {
-      yesScale = Math.min(2.2, yesScale + 0.1);
-      yesBtn.style.transform = `translateY(-50%) scale(${yesScale})`;
-    }
-
-    /* ---------- NO BUTTON RUNS AWAY ---------- */
-    function clamp(n, min, max) {
-      return Math.max(min, Math.min(max, n));
-    }
-
-    function moveNo(px, py) {
-      const z = zone.getBoundingClientRect();
-      const b = noBtn.getBoundingClientRect();
-
-      let dx = (b.left + b.width / 2) - px;
-      let dy = (b.top + b.height / 2) - py;
-      let mag = Math.hypot(dx, dy) || 1;
-      dx /= mag;
-      dy /= mag;
-
-      let newLeft = (b.left - z.left) + dx * 150;
-      let newTop  = (b.top - z.top) + dy * 150;
-
-      newLeft = clamp(newLeft, 0, z.width - b.width);
-      newTop  = clamp(newTop, 0, z.height - b.height);
-
-      noBtn.style.left = newLeft + "px";
-      noBtn.style.top = newTop + "px";
-      noBtn.style.transform = "none";
-
-      growYes();
-    }
-
-    zone.addEventListener("pointermove", e => {
-      const b = noBtn.getBoundingClientRect();
-      const d = Math.hypot(
-        (b.left + b.width / 2) - e.clientX,
-        (b.top + b.height / 2) - e.clientY
-      );
-      if (d < 140) moveNo(e.clientX, e.clientY);
-    });
-
-    noBtn.addEventListener("click", e => e.preventDefault());
-
-    /* ---------- YES CLICK ---------- */
-    yesBtn.addEventListener("click", () => {
-      zone.style.display = "none";
-      hint.style.display = "none";     // HIDE THE HINT
-      result.style.display = "block";
-      resizeConfettiCanvas();
-      fullScreenConfetti();
-    });
-  </script>
-</body>
-</html>
-
-
+      yesScale = Math.min(2.2, yesScale +
